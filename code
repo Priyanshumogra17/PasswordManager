@@ -1,55 +1,84 @@
+package DScodes.basicds;
+
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
 
-public class PasswordManager {
+public class passwordmanager {
+    private static final String SECRET_KEY = "ThisIsASecretKey";
+    private static final String ALGORITHM = "AES";
+    private static Map<String, String> credentials = new HashMap<>();
 
-    private HashMap<String, String> passwordStore;
-
-    public PasswordManager() {
-        passwordStore = new HashMap<>();
+    public static String encrypt(String data) throws Exception {
+        SecretKeySpec keySpec = new SecretKeySpec(SECRET_KEY.getBytes(), ALGORITHM);
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, keySpec);
+        byte[] encryptedBytes = cipher.doFinal(data.getBytes());
+        return Base64.getEncoder().encodeToString(encryptedBytes);
     }
 
-    public void addPassword(String account, String password) {
-        passwordStore.put(account, password);
+    public static String decrypt(String encryptedData) throws Exception {
+        SecretKeySpec keySpec = new SecretKeySpec(SECRET_KEY.getBytes(), ALGORITHM);
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, keySpec);
+        byte[] originalBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
+        return new String(originalBytes);
     }
 
-    public String getPassword(String account) {
-        return passwordStore.get(account);
+    public static void storeCredentials(String username, String password) {
+        try {
+            String encryptedPassword = encrypt(password);
+            credentials.put(username, encryptedPassword);
+            System.out.println("Credentials stored successfully!");
+        } catch (Exception e) {
+            System.out.println("Error occurred while storing credentials: " + e.getMessage());
+        }
+    }
+
+    public static void retrieveCredentials(String username) {
+        if (credentials.containsKey(username)) {
+            try {
+                String encryptedPassword = credentials.get(username);
+                String decryptedPassword = decrypt(encryptedPassword);
+                System.out.println("Username: " + username);
+                System.out.println("Password: " + decryptedPassword);
+            } catch (Exception e) {
+                System.out.println("Error occurred while retrieving credentials: " + e.getMessage());
+            }
+        } else {
+            System.out.println("Username not found!");
+        }
     }
 
     public static void main(String[] args) {
-        PasswordManager manager = new PasswordManager();
         Scanner scanner = new Scanner(System.in);
-
         while (true) {
-            System.out.println("1. Add Password");
-            System.out.println("2. Get Password");
+            System.out.println("Password Manager");
+            System.out.println("1. Store Credentials");
+            System.out.println("2. Retrieve Credentials");
             System.out.println("3. Exit");
             System.out.print("Enter your choice: ");
             int choice = scanner.nextInt();
-            scanner.nextLine();  // Consume the newline
+            scanner.nextLine(); // Consume newline character
 
             switch (choice) {
                 case 1:
-                    System.out.print("Enter account name: ");
-                    String account = scanner.nextLine();
+                    System.out.print("Enter username: ");
+                    String username = scanner.nextLine();
                     System.out.print("Enter password: ");
                     String password = scanner.nextLine();
-                    manager.addPassword(account, password);
-                    System.out.println("Password added successfully!");
+                    storeCredentials(username, password);
                     break;
                 case 2:
-                    System.out.print("Enter account name: ");
-                    String accountName = scanner.nextLine();
-                    String storedPassword = manager.getPassword(accountName);
-                    if (storedPassword != null) {
-                        System.out.println("Password: " + storedPassword);
-                    } else {
-                        System.out.println("Account not found.");
-                    }
+                    System.out.print("Enter username to retrieve password: ");
+                    String retrieveUsername = scanner.nextLine();
+                    retrieveCredentials(retrieveUsername);
                     break;
                 case 3:
-                    System.out.println("Exiting...");
+                    System.out.println("Exiting Password Manager. Goodbye!");
                     System.exit(0);
                     break;
                 default:
