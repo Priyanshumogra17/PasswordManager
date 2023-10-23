@@ -1,0 +1,60 @@
+import java.util.HashMap;
+import java.util.Scanner;
+
+public class PasswordManager {
+
+    private HashMap<String, String> passwordStore;
+
+    public PasswordManager() {
+        passwordStore = new HashMap<>();
+    }
+
+    public void addPassword(String account, String password) {
+        passwordStore.put(account, password);
+    }
+
+    public String getPassword(String account) {
+        return passwordStore.get(account);
+    }
+
+    public static void main(String[] args) {
+        PasswordManager manager = new PasswordManager();
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("1. Add Password");
+            System.out.println("2. Get Password");
+            System.out.println("3. Exit");
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();  // Consume the newline
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter account name: ");
+                    String account = scanner.nextLine();
+                    System.out.print("Enter password: ");
+                    String password = scanner.nextLine();
+                    manager.addPassword(account, password);
+                    System.out.println("Password added successfully!");
+                    break;
+                case 2:
+                    System.out.print("Enter account name: ");
+                    String accountName = scanner.nextLine();
+                    String storedPassword = manager.getPassword(accountName);
+                    if (storedPassword != null) {
+                        System.out.println("Password: " + storedPassword);
+                    } else {
+                        System.out.println("Account not found.");
+                    }
+                    break;
+                case 3:
+                    System.out.println("Exiting...");
+                    System.exit(0);
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+}
